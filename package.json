@@ -1,0 +1,27 @@
+{
+  "name": "lime-techno-store-nmsvpc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test --network hardhat",
+    "coverage": "hardhat coverage --network hardhat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://limechain-akvjty@git.codesubmit.io/limechain/lime-techno-store-nmsvpc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "dotenv": "^16.0.3",
+    "hardhat": "^2.12.3",
+    "prettier": "^2.8.0",
+    "prettier-plugin-solidity": "^1.0.0",
+    "solidity-coverage": "^0.8.2"
+  },
+  "dependencies": {
+    "openzeppelin-contracts": "^4.0.0"
+  }
+}
