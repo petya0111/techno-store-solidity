@@ -1,10 +1,15 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-chai-matchers");
+require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
+require("solidity-coverage");
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const developmentChains = ["hardhat", "localhost"];
 module.exports = {
     solidity: {
-        version: "0.8.4",
+        version: "0.8.9",
         settings: {
             optimizer: {
                 enabled: true,
