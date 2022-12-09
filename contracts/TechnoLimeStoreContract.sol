@@ -25,11 +25,13 @@ contract TechnoLimeStoreContract is Ownable {
     // msg.sender => id relation if product is owned
     mapping(address => mapping(bytes32 => bool))
         private isProductCurrentlyOwned;
+    mapping(bytes32 => address[]) public productUsers;
 
     event LogTechnoProductAdded(string indexed name, uint32 indexed quantity);
     event LogTechnoProductBought(
         bytes32 productId,
-        uint256 indexed datePurchased
+        uint256 indexed datePurchased,
+        address user
     );
     event LogTechnoProductReturned(bytes32 productId);
 
@@ -75,20 +77,21 @@ contract TechnoLimeStoreContract is Ownable {
         }
         productValidity[productId] = block.number;
         isProductCurrentlyOwned[msg.sender][productId] = true;
+        productUsers[productId].push(msg.sender);
         product.quantity -= 1;
-        emit LogTechnoProductBought(productId, productValidity[productId]);
+        emit LogTechnoProductBought(
+            productId,
+            productValidity[productId],
+            msg.sender
+        );
     }
 
     function returnProduct(bytes32 productId) external {
         if (isProductCurrentlyOwned[msg.sender][productId] == false) {
             revert LimeTechStore__NotBoughtProductFromUser();
         }
-        Product storage product = productLedger[productId];
         if ((block.number - productValidity[productId]) > 100) {
             revert LimeTechStore__ExpiredWarrantyProduct();
-        }
-        if ((product.quantity - 1) < 1) {
-            revert LimeTechStore__OutOfStock();
         }
         isProductCurrentlyOwned[msg.sender][productId] = false;
         emit LogTechnoProductReturned(productId);
@@ -100,7 +103,7 @@ contract TechnoLimeStoreContract is Ownable {
      * insead of iterating with foreach in the smart contract
      */
     function getAllAvailableProductIds()
-        public
+        external
         view
         returns (bytes32[] memory)
     {
@@ -108,7 +111,7 @@ contract TechnoLimeStoreContract is Ownable {
     }
 
     function getProductDetail(bytes32 _id)
-        public
+        external
         view
         returns (
             string memory,
@@ -123,7 +126,15 @@ contract TechnoLimeStoreContract is Ownable {
         );
     }
 
-    function isProductAlreadyOwned(bytes32 uid) public view returns (bool) {
+    function getProductUsers(bytes32 uid)
+        external
+        view
+        returns (address[] memory)
+    {
+        return productUsers[uid];
+    }
+
+    function isProductAlreadyOwned(bytes32 uid) external view returns (bool) {
         return isProductCurrentlyOwned[msg.sender][uid];
     }
 }

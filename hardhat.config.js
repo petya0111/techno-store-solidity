@@ -4,6 +4,7 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("solidity-coverage");
 require("dotenv").config();
+require("./tasks/hardhat-tasks");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const developmentChains = ["hardhat", "localhost"];

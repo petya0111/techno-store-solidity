@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { ethers, network } = require("hardhat");
 const { developmentChains } = require("../hardhat.config");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 !developmentChains.includes(network.name)
     ? describe.skip
@@ -9,16 +10,18 @@ const { developmentChains } = require("../hardhat.config");
           let admin;
           let alice;
           let bob;
+          let carol;
           let productQuantity = 50;
           before(async () => {
               let technoLimeStoreFactory = await ethers.getContractFactory(
                   "TechnoLimeStoreContract"
               );
               limeTechStore = await technoLimeStoreFactory.deploy();
-              const [owner, addr1, addr2] = await ethers.getSigners();
+              const [owner, addr1, addr2, addr3] = await ethers.getSigners();
               admin = owner;
               alice = addr1;
               bob = addr2;
+              carol = addr3;
               await limeTechStore.deployed({ from: owner });
           });
 
@@ -112,15 +115,27 @@ const { developmentChains } = require("../hardhat.config");
                   ).to.emit(limeTechStore, "LogTechnoProductBought");
               });
               it("Alice buys second tech product", async function () {
-                const allProducts =
-                    await limeTechStore.getAllAvailableProductIds();
-                const secondProduct = allProducts[1];
-                expect(
-                    await limeTechStore
-                        .connect(alice)
-                        .buyProduct(secondProduct)
-                ).to.emit(limeTechStore, "LogTechnoProductBought");
-            });
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const secondProduct = allProducts[1];
+                  expect(
+                      await limeTechStore
+                          .connect(alice)
+                          .buyProduct(secondProduct)
+                  ).to.emit(limeTechStore, "LogTechnoProductBought");
+                  await limeTechStore.getProductUsers(secondProduct);
+              });
+              it("Carol buys first tech product", async function () {
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  expect(
+                      await limeTechStore
+                          .connect(carol)
+                          .buyProduct(firstProduct)
+                  ).to.emit(limeTechStore, "LogTechnoProductBought");
+                  await limeTechStore.getProductUsers(firstProduct);
+              });
               it("Alice tries to buy a product which she already own", async function () {
                   const allProducts =
                       await limeTechStore.getAllAvailableProductIds();
@@ -150,19 +165,52 @@ const { developmentChains } = require("../hardhat.config");
               });
           });
           describe("Return techno product", function () {
-            it("Bob returns a product which is not buyed by him", async function () {
-                const allProducts =
-                    await limeTechStore.getAllAvailableProductIds();
-                const firstProduct = allProducts[0];
-                expect(
-                     limeTechStore
-                        .connect(bob)
-                        .returnProduct(firstProduct)
-                ).to.be.revertedWithCustomError(
-                    limeTechStore,
-                    "LimeTechStore__NotBoughtProductFromUser"
-                );
-            });
-           
-        });
+              it("Carol can't return product with expired warranty", async function () {
+                  // set time in the past 2 years before
+                  // await time.setNextBlockTimestamp(1796847298);
+                  await time.increaseTo(1796847298);
+                  // await ethers.provider.send("evm_mine", [1796847298]);
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  //   ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]);
+                  expect(
+                      await limeTechStore
+                          .connect(carol)
+                          .returnProduct(firstProduct)
+                  ).to.be.emit(limeTechStore, "LogTechnoProductReturned");
+              });
+              it("Alice should return first product", async function () {
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  expect(
+                      await limeTechStore
+                          .connect(alice)
+                          .returnProduct(firstProduct)
+                  ).to.be.emit(limeTechStore, "LogTechnoProductReturned");
+              });
+              it("Alice tries to return product which she is not owning", async function () {
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  expect(
+                      limeTechStore.connect(alice).returnProduct(firstProduct)
+                  ).to.be.revertedWithCustomError(
+                      limeTechStore,
+                      "LimeTechStore__NotBoughtProductFromUser"
+                  );
+              });
+          });
+          describe("Retrieve all users by a given product", function () {
+              it("Retrieve first product users", async function () {
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  const users = await limeTechStore.getProductUsers(
+                      firstProduct
+                  );
+                  expect(users).to.contain(alice.address);
+              });
+          });
       });
