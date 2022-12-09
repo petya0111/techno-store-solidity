@@ -3,11 +3,12 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error LimeStore__BlankField();
-error LimeStore__OutOfStock();
-error LimeStore__AlreadyOwnedProduct();
-error LimeStore__ExpiredWarrantyProduct();
-error LimeStore__NotBoughtProductFromUser();
+error LimeTechStore__BlankField();
+error LimeTechStore__IllegalQuantityInput();
+error LimeTechStore__OutOfStock();
+error LimeTechStore__AlreadyOwnedProduct();
+error LimeTechStore__ExpiredWarrantyProduct();
+error LimeTechStore__NotBoughtProductFromUser();
 
 contract TechnoLimeStoreContract is Ownable {
     struct Product {
@@ -17,71 +18,80 @@ contract TechnoLimeStoreContract is Ownable {
     bytes32[] public productIds;
 
     mapping(bytes32 => Product) public productLedger;
-    mapping(string => bool) private isProductNameEntered;
+    // productName => id relation
     mapping(string => bytes32) private isProductNameId;
+    // productId => block.number product validity date timespan
     mapping(bytes32 => uint256) public productValidity;
+    // msg.sender => id relation if product is owned
     mapping(address => mapping(bytes32 => bool))
         private isProductCurrentlyOwned;
 
     event LogTechnoProductAdded(string indexed name, uint32 indexed quantity);
-    event LogTechnoProductBought(bytes32 uuid, uint256 indexed datePurchased);
-    event LogTechnoProductReturned(bytes32 uuid);
+    event LogTechnoProductBought(
+        bytes32 productId,
+        uint256 indexed datePurchased
+    );
+    event LogTechnoProductReturned(bytes32 productId);
 
     /**
      * @dev Function for add new product permissioned only to admin/owner of the contract.
-     * When product name is already present and it is provided uuid the quantity only increases.
+     * When product name is already present and it is provided productId the quantity only increases.
      */
     function addNewProduct(string calldata _name, uint32 _quantity)
         external
         onlyOwner
     {
         if (bytes(_name).length == 0) {
-            revert LimeStore__BlankField();
+            revert LimeTechStore__BlankField();
         }
-        if (isProductNameEntered[_name] == false) {
+        if (_quantity <= 0) {
+            revert LimeTechStore__IllegalQuantityInput();
+        }
+        if (isProductNameId[_name] == 0) {
             Product memory newProduct = Product(_name, _quantity);
-            bytes32 uuid = keccak256(abi.encodePacked(_name));
-
-            productLedger[uuid] = newProduct;
-            productIds.push(uuid);
-            isProductNameId[_name] = uuid;
-            isProductNameEntered[_name] = true;
+            // Encoded with more parameters not causing collision.
+            bytes32 productId = keccak256(
+                abi.encodePacked(_name, _quantity, block.number)
+            );
+            productLedger[productId] = newProduct;
+            productIds.push(productId);
+            isProductNameId[_name] = productId;
+            emit LogTechnoProductAdded(_name, _quantity);
         } else {
-            bytes32 savedUuid = isProductNameId[_name];
-            Product memory storedProduct = productLedger[savedUuid];
+            bytes32 savedproductId = isProductNameId[_name];
+            Product memory storedProduct = productLedger[savedproductId];
             storedProduct.quantity += _quantity;
-            productLedger[savedUuid] = storedProduct;
+            productLedger[savedproductId] = storedProduct;
         }
-        emit LogTechnoProductAdded(_name, _quantity);
     }
 
-    function buyProduct(bytes32 uuid) external {
-        if (isProductCurrentlyOwned[msg.sender][uuid] == true) {
-            revert LimeStore__AlreadyOwnedProduct();
+    function buyProduct(bytes32 productId) external {
+        if (isProductCurrentlyOwned[msg.sender][productId] == true) {
+            revert LimeTechStore__AlreadyOwnedProduct();
         }
-        Product storage product = productLedger[uuid];
-        if ((product.quantity - 1) < 1) {
-            revert LimeStore__OutOfStock();
+        Product storage product = productLedger[productId];
+        if (product.quantity < 1) {
+            revert LimeTechStore__OutOfStock();
         }
-        productValidity[uuid] = block.number;
-        isProductCurrentlyOwned[msg.sender][uuid] = true;
-        emit LogTechnoProductBought(uuid, productValidity[uuid]);
+        productValidity[productId] = block.number;
+        isProductCurrentlyOwned[msg.sender][productId] = true;
+        product.quantity -= 1;
+        emit LogTechnoProductBought(productId, productValidity[productId]);
     }
 
-    function returnProduct(bytes32 uuid) external {
-        if (isProductCurrentlyOwned[msg.sender][uuid] == false) {
-            revert LimeStore__NotBoughtProductFromUser();
+    function returnProduct(bytes32 productId) external {
+        if (isProductCurrentlyOwned[msg.sender][productId] == false) {
+            revert LimeTechStore__NotBoughtProductFromUser();
         }
-        Product storage product = productLedger[uuid];
-        if ((block.number - productValidity[uuid]) > 100) {
-            revert LimeStore__ExpiredWarrantyProduct();
+        Product storage product = productLedger[productId];
+        if ((block.number - productValidity[productId]) > 100) {
+            revert LimeTechStore__ExpiredWarrantyProduct();
         }
-        // deploy attack to manipulate block.number and modify data to test it
         if ((product.quantity - 1) < 1) {
-            revert LimeStore__OutOfStock();
+            revert LimeTechStore__OutOfStock();
         }
-        isProductCurrentlyOwned[msg.sender][uuid] = false;
-        emit LogTechnoProductReturned(uuid);
+        isProductCurrentlyOwned[msg.sender][productId] = false;
+        emit LogTechnoProductReturned(productId);
     }
 
     /**
@@ -100,12 +110,20 @@ contract TechnoLimeStoreContract is Ownable {
     function getProductDetail(bytes32 _id)
         public
         view
-        returns (string memory, uint32, uint)
+        returns (
+            string memory,
+            uint32,
+            uint256
+        )
     {
-        return (productLedger[_id].name, productLedger[_id].quantity, productValidity[_id]);
+        return (
+            productLedger[_id].name,
+            productLedger[_id].quantity,
+            productValidity[_id]
+        );
     }
 
-    function isBookAlreadyOwned(bytes32 uid) public view returns (bool) {
+    function isProductAlreadyOwned(bytes32 uid) public view returns (bool) {
         return isProductCurrentlyOwned[msg.sender][uid];
     }
 }
