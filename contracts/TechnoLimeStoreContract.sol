@@ -51,7 +51,7 @@ contract TechnoLimeStoreContract is Ownable {
         }
         if (isProductNameId[_name] == 0) {
             Product memory newProduct = Product(_name, _quantity);
-            // Encoded with more parameters not causing collision.
+            // Encoded id with more parameters not causing collision.
             bytes32 productId = keccak256(
                 abi.encodePacked(_name, _quantity, block.number)
             );
@@ -93,6 +93,8 @@ contract TechnoLimeStoreContract is Ownable {
         if ((block.number - productValidity[productId]) > 100) {
             revert LimeTechStore__ExpiredWarrantyProduct();
         }
+        Product storage product = productLedger[productId];
+        product.quantity += 1;
         isProductCurrentlyOwned[msg.sender][productId] = false;
         emit LogTechnoProductReturned(productId);
     }

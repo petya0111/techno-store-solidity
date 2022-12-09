@@ -1,6 +1,41 @@
 # TechnoLime Store
 
+This project demonstrates a Techno Lime Store contracts. 
+> **_NOTE:_**  Contract is already deployed and verified ✅  in Goerli testnet 
+>  Techno Lime Store Contract address: 0x58093EC99BC285956EB3e6d31B2B8d455B027257 
+> Successfully verified contract TechnoLimeStoreContract on Etherscan.
+https://goerli.etherscan.io/address/0x58093EC99BC285956EB3e6d31B2B8d455B027257#code
 
+## Execute tasks for local setup
+
+Install the dependencies
+
+```shell
+npm install
+```
+
+Compile the contracts
+```shell
+npx hardhat compile
+```
+
+Run tests with 100% coverage. Unit tests are typically run on hardhat networks or ganache.
+```shell
+npm run test
+```
+
+Run tests coverage. 
+```shell
+npm run coverage
+```
+
+#### Create .env file with keys from .env.example. By default network is goerli.
+
+Deploying on testnet goerli network
+```shell
+npx hardhat deploy-testnets --network goerli
+```
+----------------
 ## Assignment
 
 Please go through the chapters in order to prepare yourself fot the challenge.

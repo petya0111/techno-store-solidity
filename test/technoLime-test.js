@@ -165,21 +165,6 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
               });
           });
           describe("Return techno product", function () {
-              it("Carol can't return product with expired warranty", async function () {
-                  // set time in the past 2 years before
-                  // await time.setNextBlockTimestamp(1796847298);
-                  await time.increaseTo(1796847298);
-                  // await ethers.provider.send("evm_mine", [1796847298]);
-                  const allProducts =
-                      await limeTechStore.getAllAvailableProductIds();
-                  const firstProduct = allProducts[0];
-                  //   ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]);
-                  expect(
-                      await limeTechStore
-                          .connect(carol)
-                          .returnProduct(firstProduct)
-                  ).to.be.emit(limeTechStore, "LogTechnoProductReturned");
-              });
               it("Alice should return first product", async function () {
                   const allProducts =
                       await limeTechStore.getAllAvailableProductIds();
@@ -211,6 +196,21 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                       firstProduct
                   );
                   expect(users).to.contain(alice.address);
+              });
+          });
+
+          describe("Expire warranty of product", function () {
+              it("Carol can't return product with expired warranty", async function () {
+                  await network.provider.send("hardhat_mine", ["0x100"]); // mine 256 blocks
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  const firstProduct = allProducts[0];
+                  expect(
+                      limeTechStore.connect(carol).returnProduct(firstProduct)
+                  ).to.be.revertedWithCustomError(
+                      limeTechStore,
+                      "LimeTechStore__ExpiredWarrantyProduct"
+                  );
               });
           });
       });
