@@ -230,7 +230,7 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                   );
               });
           });
-          describe("Present all products which are in not expired", function () {
+          describe("Present all products", function () {
               it("Clients are able to see all available products", async function () {
                   const allProducts =
                       await limeTechStore.getAllAvailableProductIds();
@@ -246,6 +246,24 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                               quantity: quantityOfProduct,
                           });
                       }
+                  }
+                  console.table(printArray);
+              });
+              it("Users can see all buyers of a given product", async function () {
+                  const allProducts =
+                      await limeTechStore.getAllAvailableProductIds();
+                  let printArray = [];
+                  for (let productHash of allProducts) {
+                      const p = await limeTechStore.getProductDetail(
+                          productHash
+                      );
+                      const users = await limeTechStore.getProductUsers(
+                          productHash
+                      );
+                      printArray.push({
+                          name: p[0],
+                          users: users,
+                      });
                   }
                   console.table(printArray);
               });
