@@ -3,9 +3,9 @@
 This project demonstrates a Techno Lime Store contracts. Custom exceptions are used to be gas-wise effective.
 
 > **_NOTE:_**  Contract is already deployed and verified ✅  in Goerli testnet 
->  Techno Lime Store Contract address: 0x887F022941FCc2ee9D73C73735E799183058531C 
-> Successfully verified contract TechnoLimeStoreContract on Etherscan.
-https://goerli.etherscan.io/address/0x887F022941FCc2ee9D73C73735E799183058531C#code
+>  Techno Lime Store Contract address: 0x866eba318F3F8E0A892268EFd9cA32d8aB3A919b 
+> Successfully submitted source code for contract
+contracts/TechnoLimeStoreContract.sol:TechnoLimeStoreContract at 0x866eba318F3F8E0A892268EFd9cA32d8aB3A919b
 
 ## Execute tasks for local setup
 

@@ -25,13 +25,12 @@ contract TechnoLimeStoreContract is Ownable {
     // msg.sender => id relation if product is owned
     mapping(address => mapping(bytes32 => bool))
         private isProductCurrentlyOwned;
-    mapping(bytes32 => address[]) public productUsers;
 
     event LogTechnoProductAdded(string indexed name, uint32 indexed quantity);
     event LogTechnoProductBought(
-        bytes32 productId,
+        bytes32 indexed productId,
         uint256 indexed datePurchased,
-        address user
+        address indexed user
     );
     event LogTechnoProductReturned(bytes32 productId);
 
@@ -74,7 +73,6 @@ contract TechnoLimeStoreContract is Ownable {
         }
         productValidity[msg.sender][productId] = block.number;
         isProductCurrentlyOwned[msg.sender][productId] = true;
-        productUsers[productId].push(msg.sender);
         product.quantity -= 1;
         emit LogTechnoProductBought(
             productId,
@@ -115,14 +113,6 @@ contract TechnoLimeStoreContract is Ownable {
         returns (string memory, uint32)
     {
         return (productLedger[_id].name, productLedger[_id].quantity);
-    }
-
-    function getProductUsers(bytes32 uid)
-        external
-        view
-        returns (address[] memory)
-    {
-        return productUsers[uid];
     }
 
     function getProductValidity(bytes32 uid) external view returns (uint256) {

@@ -123,7 +123,6 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                           .connect(alice)
                           .buyProduct(secondProduct)
                   ).to.emit(limeTechStore, "LogTechnoProductBought");
-                  await limeTechStore.getProductUsers(secondProduct);
               });
               it("Carol buys first tech product", async function () {
                   const allProducts =
@@ -134,7 +133,6 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                           .connect(carol)
                           .buyProduct(firstProduct)
                   ).to.emit(limeTechStore, "LogTechnoProductBought");
-                  await limeTechStore.getProductUsers(firstProduct);
               });
               it("Alice tries to buy a product which she already own", async function () {
                   const allProducts =
@@ -185,17 +183,6 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                       limeTechStore,
                       "LimeTechStore__NotBoughtProductFromUser"
                   );
-              });
-          });
-          describe("Retrieve all users by a given product", function () {
-              it("Retrieve first product users", async function () {
-                  const allProducts =
-                      await limeTechStore.getAllAvailableProductIds();
-                  const firstProduct = allProducts[0];
-                  const users = await limeTechStore.getProductUsers(
-                      firstProduct
-                  );
-                  expect(users).to.contain(alice.address);
               });
           });
           describe("New product is added after a long period of time", function () {
@@ -249,20 +236,28 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
                   }
                   console.table(printArray);
               });
-              it("Users can see all buyers of a given product", async function () {
+              it("Users can see all buyers by querying and filtering events", async function () {
                   const allProducts =
                       await limeTechStore.getAllAvailableProductIds();
+                  let latestBlockNumber = await (
+                      await ethers.provider.getBlock("latest")
+                  ).number;
+                  const events = await limeTechStore.queryFilter("*", 0, latestBlockNumber);
                   let printArray = [];
                   for (let productHash of allProducts) {
                       const p = await limeTechStore.getProductDetail(
                           productHash
                       );
-                      const users = await limeTechStore.getProductUsers(
-                          productHash
-                      );
+                      let filteredBoughtUsers = events
+                          .filter(
+                              (e) =>
+                                  e.event == "LogTechnoProductBought" &&
+                                  e.args[0] == productHash
+                          )
+                          .map((e) => e.args[2]);
                       printArray.push({
                           name: p[0],
-                          users: users,
+                          users: filteredBoughtUsers,
                       });
                   }
                   console.table(printArray);
