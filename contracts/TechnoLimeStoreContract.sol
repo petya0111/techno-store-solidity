@@ -21,7 +21,7 @@ contract TechnoLimeStoreContract is Ownable {
     // productName => id relation
     mapping(string => bytes32) private isProductNameId;
     // productId => block.number product validity date timespan
-    mapping(bytes32 => uint256) public productValidity;
+    mapping(address => mapping(bytes32 => uint256)) public productValidity;
     // msg.sender => id relation if product is owned
     mapping(address => mapping(bytes32 => bool))
         private isProductCurrentlyOwned;
@@ -51,10 +51,7 @@ contract TechnoLimeStoreContract is Ownable {
         }
         if (isProductNameId[_name] == 0) {
             Product memory newProduct = Product(_name, _quantity);
-            // Encoded id with more parameters not causing collision.
-            bytes32 productId = keccak256(
-                abi.encodePacked(_name, _quantity, block.number)
-            );
+            bytes32 productId = keccak256(abi.encodePacked(_name, _quantity));
             productLedger[productId] = newProduct;
             productIds.push(productId);
             isProductNameId[_name] = productId;
@@ -75,13 +72,13 @@ contract TechnoLimeStoreContract is Ownable {
         if (product.quantity < 1) {
             revert LimeTechStore__OutOfStock();
         }
-        productValidity[productId] = block.number;
+        productValidity[msg.sender][productId] = block.number;
         isProductCurrentlyOwned[msg.sender][productId] = true;
         productUsers[productId].push(msg.sender);
         product.quantity -= 1;
         emit LogTechnoProductBought(
             productId,
-            productValidity[productId],
+            productValidity[msg.sender][productId],
             msg.sender
         );
     }
@@ -90,7 +87,7 @@ contract TechnoLimeStoreContract is Ownable {
         if (isProductCurrentlyOwned[msg.sender][productId] == false) {
             revert LimeTechStore__NotBoughtProductFromUser();
         }
-        if ((block.number - productValidity[productId]) > 100) {
+        if ((block.number - productValidity[msg.sender][productId]) > 100) {
             revert LimeTechStore__ExpiredWarrantyProduct();
         }
         Product storage product = productLedger[productId];
@@ -115,17 +112,9 @@ contract TechnoLimeStoreContract is Ownable {
     function getProductDetail(bytes32 _id)
         external
         view
-        returns (
-            string memory,
-            uint32,
-            uint256
-        )
+        returns (string memory, uint32)
     {
-        return (
-            productLedger[_id].name,
-            productLedger[_id].quantity,
-            productValidity[_id]
-        );
+        return (productLedger[_id].name, productLedger[_id].quantity);
     }
 
     function getProductUsers(bytes32 uid)
@@ -134,6 +123,10 @@ contract TechnoLimeStoreContract is Ownable {
         returns (address[] memory)
     {
         return productUsers[uid];
+    }
+
+    function getProductValidity(bytes32 uid) external view returns (uint256) {
+        return productValidity[msg.sender][uid];
     }
 
     function isProductAlreadyOwned(bytes32 uid) external view returns (bool) {

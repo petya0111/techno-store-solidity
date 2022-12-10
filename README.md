@@ -1,10 +1,11 @@
 # TechnoLime Store
 
-This project demonstrates a Techno Lime Store contracts. 
+This project demonstrates a Techno Lime Store contracts. Custom exceptions are used to be gas-wise effective.
+
 > **_NOTE:_**  Contract is already deployed and verified ✅  in Goerli testnet 
->  Techno Lime Store Contract address: 0x58093EC99BC285956EB3e6d31B2B8d455B027257 
+>  Techno Lime Store Contract address: 0x887F022941FCc2ee9D73C73735E799183058531C 
 > Successfully verified contract TechnoLimeStoreContract on Etherscan.
-https://goerli.etherscan.io/address/0x58093EC99BC285956EB3e6d31B2B8d455B027257#code
+https://goerli.etherscan.io/address/0x887F022941FCc2ee9D73C73735E799183058531C#code
 
 ## Execute tasks for local setup
 
