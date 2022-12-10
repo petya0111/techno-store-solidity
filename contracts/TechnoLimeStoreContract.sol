@@ -36,7 +36,7 @@ contract TechnoLimeStoreContract is Ownable {
 
     /**
      * @dev Function for add new product permissioned only to admin/owner of the contract.
-     * When product name is already present and it is provided productId the quantity only increases.
+     * When product name is already present the quantity only increases.
      */
     function addNewProduct(string calldata _name, uint32 _quantity)
         external
@@ -63,6 +63,10 @@ contract TechnoLimeStoreContract is Ownable {
         }
     }
 
+    /**
+     * @dev Function for buying a product by id.
+     * When product is bought a validity/warranty block number is set.
+     */
     function buyProduct(bytes32 productId) external {
         if (isProductCurrentlyOwned[msg.sender][productId] == true) {
             revert LimeTechStore__AlreadyOwnedProduct();
@@ -81,6 +85,10 @@ contract TechnoLimeStoreContract is Ownable {
         );
     }
 
+    /**
+     * @dev Function for returning a product by id.
+     * When product is returned the quantity stock increases with one extra item.
+     */
     function returnProduct(bytes32 productId) external {
         if (isProductCurrentlyOwned[msg.sender][productId] == false) {
             revert LimeTechStore__NotBoughtProductFromUser();
@@ -107,6 +115,10 @@ contract TechnoLimeStoreContract is Ownable {
         return productIds;
     }
 
+    /**
+     * @dev This is the function for get details for product by id.
+     * It returns name of the product and quantity.
+     */
     function getProductDetail(bytes32 _id)
         external
         view
@@ -115,10 +127,16 @@ contract TechnoLimeStoreContract is Ownable {
         return (productLedger[_id].name, productLedger[_id].quantity);
     }
 
+    /**
+     * @dev This is the function for having information about product block time validity
+     */
     function getProductValidity(bytes32 uid) external view returns (uint256) {
         return productValidity[msg.sender][uid];
     }
 
+    /**
+     * @dev This is the function for checking if user alredy owns a product
+     */
     function isProductAlreadyOwned(bytes32 uid) external view returns (bool) {
         return isProductCurrentlyOwned[msg.sender][uid];
     }
