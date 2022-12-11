@@ -26,7 +26,7 @@ async function deployLibraryContract() {
             "Deployed technoLimeStoreContract on contract address: " +
             technoLimeStoreContract.address,
     });
-    technoLimeStoreContract.deployTransaction.wait(7);
+    technoLimeStoreContract.deployTransaction.wait(15);
     await hre.run("verify:verify", {
         address: technoLimeStoreContract.address,
         constructorArguments: [],

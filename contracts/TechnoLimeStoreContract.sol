@@ -144,7 +144,7 @@ contract TechnoLimeStoreContract is Ownable {
         }("");
         require(callSuccess, "Call failed");
         storedProduct.claimableFunds = 0;
-        emit PaymentWithdrawn(storedProduct.price, productId);
+        emit PaymentWithdrawn(storedProduct.claimableFunds, productId);
     }
 
     /// @notice Function for buying a product by id. When product is bought a validity/warranty block number is set.
