@@ -3,9 +3,9 @@
 This project demonstrates a Techno Lime Store contracts. Custom exceptions are used to be gas-wise effective.
 
 > **_NOTE:_**  Contract is already deployed and verified ✅  in Goerli testnet 
->  Techno Lime Store Contract address: 0x866eba318F3F8E0A892268EFd9cA32d8aB3A919b 
+>  Techno Lime Store Contract address: 0x649B78e0b53286780EA342B221AA085b114791Ab 
 > Successfully verified contract TechnoLimeStoreContract on Etherscan.
-https://goerli.etherscan.io/address/0x866eba318F3F8E0A892268EFd9cA32d8aB3A919b#code
+https://goerli.etherscan.io/address/0x649B78e0b53286780EA342B221AA085b114791Ab#code
 
 ## Execute tasks for local setup
 
@@ -17,7 +17,7 @@ npm install
 
 Compile the contracts
 ```shell
-npx hardhat compile
+npm run compile
 ```
 
 Run tests with 100% coverage. Unit tests are typically run on hardhat networks or ganache.

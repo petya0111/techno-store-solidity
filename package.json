@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test --network hardhat",
-    "coverage": "hardhat coverage --network hardhat"
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "compile": "hardhat compile"
   },
   "repository": {
     "type": "git",
